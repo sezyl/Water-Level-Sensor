@@ -20,7 +20,7 @@
  * 7. Calibration is done and device start working in normal mode
  **/
 
-#include "config.h"
+//#include "config.h"
 #include <SoftSerial.h>     /* Allows Pin Change Interrupt Vector Sharing */
 #include <TinyPinChange.h>  /*  */
 #include <avr/eeprom.h>

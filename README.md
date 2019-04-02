@@ -1,5 +1,4 @@
-# Water Level Sensor [![Build Status](https://travis-ci.org/sezyl/Water-Level-Sensor.svg?branch=master)](https://travis-ci.org/sezyl/Water-Level-Sensor)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# Water Level Sensor [![Build Status](https://travis-ci.org/sezyl/Water-Level-Sensor.svg?branch=master)](https://travis-ci.org/sezyl/Water-Level-Sensor) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 Device for sensing water level in tank and controlling pump or valve. It includes Arduino sketch for ATtiny85 AVR microcontroller. 
 When water level is above defined threshold, pump is on until water is out.
 
