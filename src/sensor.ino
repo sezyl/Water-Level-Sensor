@@ -1,19 +1,5 @@
 // 2019 - Sebastian Żyłowski
-// This program reads pressure sensor voltage, average it and output over the uart
-
-/**
- * Sensor calibration:
- * 
- * 1. Turn off device
- * 2. Sink sensor to pump off level (usually very close to complete unsink)
- * 3. Keep PB3 low and power on device
- * 4. Keep PB3 low until LED stop blinking and turns off
- * 5. Sink sensor to pump on level
- * 6. Pull PB3 low shortly
- * 7. Calibration is done and device start working in normal mode
- **/
-
-#include "config.h"
+// These are sensor reading and averaging routines
 
 int samples[AVERAGE_WINDOW] = { 0 };
 uint8_t samples_in_buffer = 0;

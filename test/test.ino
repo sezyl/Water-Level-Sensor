@@ -4,6 +4,9 @@
 #include <AUnit.h>
 #include "./config.h"
 
+// define it
+#define INTERNAL1V1 0
+
 // Tests
 
 extern int samples[AVERAGE_WINDOW];

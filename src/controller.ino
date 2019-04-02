@@ -1,8 +1,5 @@
 // 2019 - Sebastian Żyłowski
-// This program reads pressure sensor voltage, average it and output over the uart
-
-#include "config.h"
-
+// These are controller routines
 
 uint8_t relayMode = RELAY_IDLE;
 uint8_t pumpFailureCounter = 0;

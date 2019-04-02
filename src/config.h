@@ -1,3 +1,6 @@
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
 // PB0 - MOSI, P0 - RELAY
 // PB1 - MISO, P1 - LED
 // PB2 - ADC1, P2 - SENSOR
@@ -49,4 +52,6 @@
 #define EEPROM_ON_THRESHOLD_ADDR ((uint16_t *)4)
 #define EEPROM_CRC_ADDR ((uint16_t *)6)
 #define EEPROM_THRESHOLD_MAGIC 0x7132
+
+#endif
 

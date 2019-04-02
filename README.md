@@ -1,13 +1,15 @@
 # Water Level Sensor [![Build Status](https://travis-ci.org/sezyl/Water-Level-Sensor.svg?branch=master)](https://travis-ci.org/sezyl/Water-Level-Sensor)
-
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 Device for sensing water level in tank and controlling pump or valve. It includes Arduino sketch for ATtiny85 AVR microcontroller. 
 When water level is above defined threshold, pump is on until water is out.
 
 # Construction
 Sensor device with its circuit is enclosed in hermetic case assembled on top of pipe. It connects to external power supply and relay that controls pump.
+
 Main components:
 * [MPX5010DP - pressure sensor](https://www.nxp.com/docs/en/data-sheet/MPX5010.pdf)
 * [Digispark clone board with ATtiny85](https://i.stack.imgur.com/Iv2bq.png)
+
 ![Diagram](doc/diagram.png)
 
 
