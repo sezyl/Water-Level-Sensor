@@ -42,5 +42,6 @@ echo "########################################################################";
 
 arduino --pref "boardsmanager.additional.urls=http://digistump.com/package_digistump_index.json" --save-prefs 2>&1
 arduino --install-boards digistump:avr 2>&1
+arduino --install-library AUnit 2>&1
 arduino --pref "compiler.warning_level=all" --save-prefs 2>&1
 arduino --board digistump:avr:digispark-tiny8 --save-prefs 2>&1
