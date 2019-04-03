@@ -1,11 +1,4 @@
-// PB0 - MOSI, P0 - RELAY
-// PB1 - MISO, P1 - LED
-// PB2 - ADC1, P2 - SENSOR
-// PB3 - ADC3, P3 - USB- / RX
-// PB4 - ADC2, P4 - USB+ / TX
-// PB5 - NRES, ADC0, P5
-
-// 2019 - Sebastian Żyłowski
+// 2019 - Sebastian Ĺ»yĹ‚owski
 // This program reads pressure sensor voltage, average it and output over the uart
 
 /**
@@ -20,14 +13,20 @@
  * 7. Calibration is done and device start working in normal mode
  **/
 
-//#include "config.h"
+// PB0 - MOSI, P0 - RELAY
+// PB1 - MISO, P1 - LED
+// PB2 - ADC1, P2 - SENSOR
+// PB3 - ADC3, P3 - USB- / RX
+// PB4 - ADC2, P4 - USB+ / TX
+// PB5 - NRES, ADC0, P5
+
 #include <SoftSerial.h>     /* Allows Pin Change Interrupt Vector Sharing */
 #include <TinyPinChange.h>  /*  */
 #include <avr/eeprom.h>
 
 void(* resetFunction) (void) = 0;
 
-SoftSerial mySerial(RX, TX); // RX, TX
+SoftSerial mySerial(RX_PIN, TX_PIN); // RX, TX
 
 #ifdef CONSOLE
 char uartrx_buffer[UARTRX_BUFFER_SIZE];
@@ -43,22 +42,12 @@ void setup()
 
   // initialize the digital pin as an output.
   pinMode(LED, OUTPUT); //LED
-  pinMode(TX, OUTPUT);
-  pinMode(RX, INPUT_PULLUP);
+  pinMode(TX_PIN, OUTPUT);
+  pinMode(RX_PIN, INPUT_PULLUP);
   digitalWrite(LED, LOW);
 
   SensorSetup();
   ControllerSetup();
-
-#if 0
-  // clearing of global variables is not really needed
-  for (i = 0; i < AVERAGE_WINDOW; i++)
-  {
-    samples[i] = 0;
-  }
-  samples_in_buffer = 0;
-  samples_id = 0;
-#endif
 
   // set the data rate for the SoftwareSerial port
   mySerial.begin(9600);
@@ -124,7 +113,11 @@ void loop()
   digitalWrite(LED, LOW);   // turn the LED off
   delay(20);          // let voltage regulator to stabilize and reduce noise
   sensorValue = ReadSensorAdc();
+ #if 0
   sensorAverage = AverageAdc(sensorValue);
+ #else
+  sensorAverage = sensorValue;
+ #endif
   temperature = ReadTemperatureAdc();
 
 
@@ -145,7 +138,7 @@ void loop()
   sensorPercentage = (sensorPercentage*100)/(pumpOnThreshold-pumpOffThreshold);
   
   ControllerLoop(sensorAverage);
-  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d", sensorAverage, sensorValue, temperature);
+  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d %d %d", sensorAverage, sensorValue, temperature, sensorPercentage, relayMode);
 
   if( (sensorPercentage<50) && (relayMode==0) )
   {  // if water level < 50% and we are in idle, then wait adequate time and turn off the LED
@@ -206,7 +199,7 @@ bool checkSerial(void)
 bool statusFunction(void)
 { int sensor = ReadSensorAdc();
 
-  snprintf(buf, UART_BUFFER_SIZE, "20 [RELAY] Status: %d, Counter: %d, #ON: %ld, ON time: %ld", relayMode, relayCounter, relayOns, relayOnTime);
+  snprintf(buf, UART_BUFFER_SIZE, "20 [RELAY] Status: %d, Counter: %d, #ON: %ld", relayMode, relayCounter, relayOns);
   mySerial.println(buf);
   snprintf(buf, UART_BUFFER_SIZE, "21 [SENSOR] Value: %d, Average: %d, idx: %d, #: %d", sensor, AverageAdc(sensor), samples_id, samples_in_buffer);
   mySerial.println(buf);
