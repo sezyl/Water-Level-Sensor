@@ -9,9 +9,10 @@
 
 // Tests
 
-extern int samples[AVERAGE_WINDOW];
-extern uint8_t samples_in_buffer;
-extern uint8_t samples_id;
+#if 0
+int samples[AVERAGE_WINDOW];
+uint8_t samples_in_buffer;
+uint8_t samples_id;
 
 test(sensor, check_init) {
   uint16_t sensor_data[AVERAGE_WINDOW] = { 0 };
@@ -68,17 +69,17 @@ test(sensor, table_fill) {
   // number of samples in table should not increase
   assertEqual( AVERAGE_WINDOW, samples_in_buffer );
 }
+#endif
 
 #if 1
-extern uint8_t relayMode;
-extern uint8_t pumpFailureCounter;
-extern uint16_t relayCounter;
-extern unsigned long relayOns;
-extern unsigned long relayOnTime;
-extern unsigned long relayOnStart;
-extern unsigned long inactiveTime;
-extern uint16_t pumpOffThreshold;
-extern uint16_t pumpOnThreshold;
+uint8_t relayMode;
+uint8_t pumpFailureCounter;
+uint16_t relayCounter;
+unsigned long relayOns;
+unsigned long inactiveTime;
+uint16_t pumpOffThreshold = RELAY_OFF_THRESHOLD;
+uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
+int last_sensor;
 #endif
 
 test(controller, check_init)
@@ -87,8 +88,6 @@ test(controller, check_init)
   assertEqual(0, pumpFailureCounter);
   assertEqual(0, (int)relayCounter);
   assertEqual(0UL, relayOns);
-  assertEqual(0UL, relayOnTime);
-  assertEqual(0UL, relayOnStart);
   assertEqual(0UL, inactiveTime);
   assertEqual(RELAY_OFF_THRESHOLD, (int)pumpOffThreshold);
   assertEqual(RELAY_ON_THRESHOLD, (int)pumpOnThreshold);
@@ -145,7 +144,7 @@ test(controller, check_thresholds)
   for(i=0;i<10;i++)
   {
     assertEqual(i, (int)inactiveTime);
-    ControllerLoop(RELAY_OFF_THRESHOLD);
+    ControllerLoop(RELAY_OFF_THRESHOLD-1);
     assertEqual(RELAY_IDLE, relayMode);
   }
   // now indicate high level
@@ -170,7 +169,18 @@ test(controller, check_thresholds)
     assertEqual(RELAY_IGNITED, relayMode);
   }
 
-  // now indicate low level, it should went to grace off mode
+  // now indicate low level, it should went to ignited off mode
+  ControllerLoop(RELAY_OFF_THRESHOLD-1);
+  assertEqual(RELAY_IGNITED_OFF, relayMode);
+  assertEqual(0, (int)relayCounter);
+
+  for(i=0;i<RELAY_TIME_TO_OFF;i++)
+  {
+     ControllerLoop(RELAY_OFF_THRESHOLD-1);
+     assertEqual(RELAY_IGNITED_OFF, relayMode);
+     assertEqual(i+1, (int)relayCounter);
+  }
+  // after timeout it should went to grace off mode
   ControllerLoop(RELAY_OFF_THRESHOLD-1);
   assertEqual(RELAY_GRACEOFF, relayMode);
   assertEqual(0, (int)relayCounter);
@@ -375,7 +385,11 @@ test(controller, pump_failure)
   }
   // ..and simulate that water level decreased
   ControllerLoop(RELAY_OFF_THRESHOLD-1);
-  // we should immediately move to grace off mode
+  // we should immediately move to ignited off mode
+  assertEqual(RELAY_IGNITED_OFF, relayMode);
+  // now simulate water level went up despite of still on pump
+  ControllerLoop(RELAY_OFF_THRESHOLD);
+  // we should move to grace off mode
   assertEqual(RELAY_GRACEOFF, relayMode);
   // and pump failure counter should be reset
   assertEqual(0, pumpFailureCounter);

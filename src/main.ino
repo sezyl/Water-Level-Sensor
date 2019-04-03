@@ -33,10 +33,13 @@ unsigned long relayOns = 0;
 unsigned long inactiveTime = 0;
 uint16_t pumpOffThreshold = RELAY_OFF_THRESHOLD;
 uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
+int last_sensor = 0;
 
+#if 0
 int samples[AVERAGE_WINDOW] = { 0 };
 uint8_t samples_in_buffer = 0;
 uint8_t samples_id = 0;
+#endif
 
 
 void(* resetFunction) (void) = 0;

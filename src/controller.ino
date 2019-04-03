@@ -39,8 +39,7 @@ bool RelayIncreaseTimer(int time_top, uint8_t new_mode)
 // function should be call every 1 second
 // It controls relay accordingly to sensor readout and current state.
 void ControllerLoop(int sensor)
-{ int last_sensor;
-
+{ 
   switch (relayMode)
   {
     case RELAY_IGNITED:
