@@ -1,4 +1,4 @@
-// PB0 - MOSI, P0 - RELAY
+﻿// PB0 - MOSI, P0 - RELAY
 // PB1 - MISO, P1 - LED
 // PB2 - ADC1, P2 - SENSOR
 // PB3 - ADC3, P3 - USB- / RX
@@ -20,7 +20,7 @@
  * 7. Calibration is done and device start working in normal mode
  **/
 
-#include "config.h"
+//#include "config.h"
 #include <SoftSerial.h>     /* Allows Pin Change Interrupt Vector Sharing */
 #include <TinyPinChange.h>  /*  */
 #include <avr/eeprom.h>
