@@ -1,4 +1,4 @@
-// 2019 - Sebastian Żyłowski
+// 2019 - Sebastian Ĺ»yĹ‚owski
 // These are sensor reading and averaging routines
 
 /* sensor functions */

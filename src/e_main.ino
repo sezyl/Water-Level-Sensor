@@ -1,11 +1,4 @@
-﻿// PB0 - MOSI, P0 - RELAY
-// PB1 - MISO, P1 - LED
-// PB2 - ADC1, P2 - SENSOR
-// PB3 - ADC3, P3 - USB- / RX
-// PB4 - ADC2, P4 - USB+ / TX
-// PB5 - NRES, ADC0, P5
-
-// 2019 - Sebastian Żyłowski
+// 2019 - Sebastian Ĺ»yĹ‚owski
 // This program reads pressure sensor voltage, average it and output over the uart
 
 /**
@@ -20,31 +13,20 @@
  * 7. Calibration is done and device start working in normal mode
  **/
 
-//#include "config.h"
+// PB0 - MOSI, P0 - RELAY
+// PB1 - MISO, P1 - LED
+// PB2 - ADC1, P2 - SENSOR
+// PB3 - ADC3, P3 - USB- / RX
+// PB4 - ADC2, P4 - USB+ / TX
+// PB5 - NRES, ADC0, P5
+
 #include <SoftSerial.h>     /* Allows Pin Change Interrupt Vector Sharing */
 #include <TinyPinChange.h>  /*  */
 #include <avr/eeprom.h>
 
-uint8_t relayMode = RELAY_IDLE;
-uint8_t pumpFailureCounter = 0;
-
-uint16_t relayCounter = 0;
-unsigned long relayOns = 0;
-unsigned long inactiveTime = 0;
-uint16_t pumpOffThreshold = RELAY_OFF_THRESHOLD;
-uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
-int last_sensor = 0;
-
-#if 0
-int samples[AVERAGE_WINDOW] = { 0 };
-uint8_t samples_in_buffer = 0;
-uint8_t samples_id = 0;
-#endif
-
-
 void(* resetFunction) (void) = 0;
 
-SoftSerial mySerial(RX, TX); // RX, TX
+SoftSerial mySerial(RX_PIN, TX_PIN); // RX, TX
 
 #ifdef CONSOLE
 char uartrx_buffer[UARTRX_BUFFER_SIZE];
@@ -60,22 +42,12 @@ void setup()
 
   // initialize the digital pin as an output.
   pinMode(LED, OUTPUT); //LED
-  pinMode(TX, OUTPUT);
-  pinMode(RX, INPUT_PULLUP);
+  pinMode(TX_PIN, OUTPUT);
+  pinMode(RX_PIN, INPUT_PULLUP);
   digitalWrite(LED, LOW);
 
   SensorSetup();
   ControllerSetup();
-
-#if 0
-  // clearing of global variables is not really needed
-  for (i = 0; i < AVERAGE_WINDOW; i++)
-  {
-    samples[i] = 0;
-  }
-  samples_in_buffer = 0;
-  samples_id = 0;
-#endif
 
   // set the data rate for the SoftwareSerial port
   mySerial.begin(9600);

@@ -8,9 +8,6 @@
 // PB4 - ADC2, P4 - USB+ / TX
 // PB5 - NRES, ADC0, P5
 
-// 2019 - Sebastian Żyłowski
-// This program reads pressure sensor voltage, average it and output over the uart
-
 #define notCONSOLE 
 #define STORAGE
 
@@ -18,8 +15,8 @@
 #define RELAY 0
 #define LED 1
 #define ADC_PIN 2
-#define RX 3
-#define TX 4
+#define RX_PIN 3
+#define TX_PIN 4
 #define ADC_IN A1
 #define TEMP_SENSOR (A3+1)
 

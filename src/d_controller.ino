@@ -1,6 +1,17 @@
-// 2019 - Sebastian Żyłowski
+// 2019 - Sebastian Ĺ»yĹ‚owski
 // These are controller routines
 
+uint8_t relayMode = RELAY_IDLE;
+uint8_t pumpFailureCounter = 0;
+
+uint16_t relayCounter = 0;
+unsigned long relayOns = 0;
+unsigned long inactiveTime = 0;
+
+uint16_t pumpOffThreshold = RELAY_OFF_THRESHOLD;
+uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
+
+int last_sensor = 0;
 
 // the setup routine runs once when you press reset:
 void ControllerSetup() 
