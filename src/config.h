@@ -24,17 +24,18 @@
 #define TEMP_SENSOR (A3+1)
 
 // sensor data average window, for 10-bit adc it can't be higher than 32!
-#define AVERAGE_WINDOW 10
+#define AVERAGE_WINDOW 3
 
 // uart buffers
 #define UART_BUFFER_SIZE 40
 #define UARTRX_BUFFER_SIZE 20
 
-#define RELAY_IDLE      0
-#define RELAY_IGNITED   1
-#define RELAY_GRACEOFF  2
-#define RELAY_OXYGENATE 3
-#define RELAY_PUMP_FAILURE 4
+#define RELAY_IDLE         0
+#define RELAY_IGNITED      1
+#define RELAY_IGNITED_OFF  2
+#define RELAY_GRACEOFF     3
+#define RELAY_OXYGENATE    4
+#define RELAY_PUMP_FAILURE 5
 
 #define RELAY_TIME_TO_ON  2UL
 #define RELAY_TIME_TO_OFF 10UL
@@ -45,8 +46,8 @@
 #define RELAY_TIME_OXYGENATE 60UL
 
 #define RELAY_OVF_MAX   5
-#define RELAY_ON_THRESHOLD 700
-#define RELAY_OFF_THRESHOLD 400
+#define RELAY_ON_THRESHOLD 500
+#define RELAY_OFF_THRESHOLD 60
 
 #define EEPROM_OFF_THRESHOLD_ADDR ((uint16_t *)2)
 #define EEPROM_ON_THRESHOLD_ADDR ((uint16_t *)4)
@@ -54,4 +55,3 @@
 #define EEPROM_THRESHOLD_MAGIC 0x7132
 
 #endif
-

@@ -1,16 +1,6 @@
 // 2019 - Sebastian Żyłowski
 // These are controller routines
 
-uint8_t relayMode = RELAY_IDLE;
-uint8_t pumpFailureCounter = 0;
-
-uint16_t relayCounter = 0;
-unsigned long relayOns = 0;
-unsigned long relayOnTime = 0;
-unsigned long relayOnStart = 0;
-unsigned long inactiveTime = 0;
-uint16_t pumpOffThreshold = RELAY_OFF_THRESHOLD;
-uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
 
 // the setup routine runs once when you press reset:
 void ControllerSetup() 
@@ -49,15 +39,15 @@ bool RelayIncreaseTimer(int time_top, uint8_t new_mode)
 // function should be call every 1 second
 // It controls relay accordingly to sensor readout and current state.
 void ControllerLoop(int sensor)
-{
+{ int last_sensor;
+
   switch (relayMode)
   {
     case RELAY_IGNITED:
       digitalWrite(RELAY, HIGH);
       if ( sensor < pumpOffThreshold )
       {  // water level below threshold, turn off pump and wait grace time
-         NextRelayMode(RELAY_GRACEOFF);
-         relayOnTime = (millis() - relayOnStart) / 1000;
+         NextRelayMode(RELAY_IGNITED_OFF);
          pumpFailureCounter = 0;
       } else 
       {
@@ -69,6 +59,15 @@ void ControllerLoop(int sensor)
             NextRelayMode(RELAY_PUMP_FAILURE);
           }
         }
+      }
+      break;
+    case RELAY_IGNITED_OFF:
+      if(last_sensor<sensor)  //if water level is going up, turn the pump off
+      {
+        NextRelayMode(RELAY_GRACEOFF);
+      } else
+      {
+        RelayIncreaseTimer(RELAY_TIME_TO_OFF, RELAY_GRACEOFF);
       }
       break;
     case RELAY_GRACEOFF:
@@ -90,16 +89,14 @@ void ControllerLoop(int sensor)
       {
          NextRelayMode(RELAY_OXYGENATE);
          relayOns++;
-         relayOnStart = millis();
       } else
       {
         if ( sensor > pumpOnThreshold )
         {
           NextRelayMode(RELAY_IGNITED);
           relayOns++;
-          relayOnStart = millis();
         } else relayCounter = 0;
       }
   }
+  last_sensor = sensor;
 }
-

@@ -20,10 +20,24 @@
  * 7. Calibration is done and device start working in normal mode
  **/
 
-//#include "config.h"
+#include "config.h"
 #include <SoftSerial.h>     /* Allows Pin Change Interrupt Vector Sharing */
 #include <TinyPinChange.h>  /*  */
 #include <avr/eeprom.h>
+
+uint8_t relayMode = RELAY_IDLE;
+uint8_t pumpFailureCounter = 0;
+
+uint16_t relayCounter = 0;
+unsigned long relayOns = 0;
+unsigned long inactiveTime = 0;
+uint16_t pumpOffThreshold = RELAY_OFF_THRESHOLD;
+uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
+
+int samples[AVERAGE_WINDOW] = { 0 };
+uint8_t samples_in_buffer = 0;
+uint8_t samples_id = 0;
+
 
 void(* resetFunction) (void) = 0;
 
@@ -124,7 +138,11 @@ void loop()
   digitalWrite(LED, LOW);   // turn the LED off
   delay(20);          // let voltage regulator to stabilize and reduce noise
   sensorValue = ReadSensorAdc();
+ #if 0
   sensorAverage = AverageAdc(sensorValue);
+ #else
+  sensorAverage = sensorValue;
+ #endif
   temperature = ReadTemperatureAdc();
 
 
@@ -145,7 +163,7 @@ void loop()
   sensorPercentage = (sensorPercentage*100)/(pumpOnThreshold-pumpOffThreshold);
   
   ControllerLoop(sensorAverage);
-  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d", sensorAverage, sensorValue, temperature);
+  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d %d %d", sensorAverage, sensorValue, temperature, sensorPercentage, relayMode);
 
   if( (sensorPercentage<50) && (relayMode==0) )
   {  // if water level < 50% and we are in idle, then wait adequate time and turn off the LED
@@ -206,7 +224,7 @@ bool checkSerial(void)
 bool statusFunction(void)
 { int sensor = ReadSensorAdc();
 
-  snprintf(buf, UART_BUFFER_SIZE, "20 [RELAY] Status: %d, Counter: %d, #ON: %ld, ON time: %ld", relayMode, relayCounter, relayOns, relayOnTime);
+  snprintf(buf, UART_BUFFER_SIZE, "20 [RELAY] Status: %d, Counter: %d, #ON: %ld", relayMode, relayCounter, relayOns);
   mySerial.println(buf);
   snprintf(buf, UART_BUFFER_SIZE, "21 [SENSOR] Value: %d, Average: %d, idx: %d, #: %d", sensor, AverageAdc(sensor), samples_id, samples_in_buffer);
   mySerial.println(buf);
