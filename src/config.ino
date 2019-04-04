@@ -9,7 +9,7 @@
 // PB5 - NRES, ADC0, P5
 
 #define notCONSOLE 
-#define STORAGE
+#define CALIBRATION
 
 // PINS definition
 #define RELAY 0
@@ -45,6 +45,8 @@
 #define RELAY_OVF_MAX   5
 #define RELAY_ON_THRESHOLD 500
 #define RELAY_OFF_THRESHOLD 60
+#define OFF_THRESHOLD_SHIFT 10
+#define MIN_THRESHOLD_DISTANCE 50
 
 #define EEPROM_OFF_THRESHOLD_ADDR ((uint16_t *)2)
 #define EEPROM_ON_THRESHOLD_ADDR ((uint16_t *)4)
