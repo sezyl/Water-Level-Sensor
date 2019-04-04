@@ -104,7 +104,7 @@ void BlinkLed(int blinks)
 // the loop routine runs over and over again forever:
 void loop() 
 {
-  int sensorValue, sensorAverage, temperature, sensorPercentage;
+  int sensorValue, temperature, sensorPercentage;
   unsigned long time;
 
   time = millis() % 1000;
@@ -113,11 +113,6 @@ void loop()
   digitalWrite(LED, LOW);   // turn the LED off
   delay(20);          // let voltage regulator to stabilize and reduce noise
   sensorValue = ReadSensorAdc();
- #if 0
-  sensorAverage = AverageAdc(sensorValue);
- #else
-  sensorAverage = sensorValue;
- #endif
   temperature = ReadTemperatureAdc();
 
 
@@ -127,9 +122,9 @@ void loop()
   if(relayMode != RELAY_IDLE)
     BlinkLed(1+relayMode);     // blink current mode
 
-  if(sensorAverage > pumpOffThreshold)
+  if(sensorValue > pumpOffThreshold)
   {
-     sensorPercentage = sensorAverage - pumpOffThreshold;
+     sensorPercentage = sensorValue - pumpOffThreshold;
   } else
   {
     sensorPercentage = 0;
@@ -137,8 +132,8 @@ void loop()
   // calculate current water level in percentage of relay on level - it could be > 100%
   sensorPercentage = (sensorPercentage*100)/(pumpOnThreshold-pumpOffThreshold);
   
-  ControllerLoop(sensorAverage);
-  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d %d %d", sensorAverage, sensorValue, temperature, sensorPercentage, relayMode);
+  ControllerLoop(sensorValue);
+  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d %d", sensorValue, temperature, sensorPercentage, relayMode);
 
   if( (sensorPercentage<50) && (relayMode==0) )
   {  // if water level < 50% and we are in idle, then wait adequate time and turn off the LED

@@ -17,8 +17,8 @@
 #define ADC_PIN 2
 #define RX_PIN 3
 #define TX_PIN 4
-#define ADC_IN A1
-#define TEMP_SENSOR (A3+1)
+#define ADC_IN 1
+#define TEMP_SENSOR 15
 
 // sensor data average window, for 10-bit adc it can't be higher than 32!
 #define AVERAGE_WINDOW 3
@@ -36,8 +36,8 @@
 
 #define RELAY_TIME_TO_ON  2UL
 #define RELAY_TIME_TO_OFF 10UL
-#define RELAY_TIME_GRACE 60UL
-#define RELAY_TIME_ON_MAX (5*30UL)
+#define RELAY_TIME_GRACE 120UL
+#define RELAY_TIME_ON_MAX (10*60UL)
 #define RELAY_TIME_ON_FAILURE (60*60UL)
 #define RELAY_TIME_INACTIVE_MAX (24*60*60UL)
 #define RELAY_TIME_OXYGENATE 60UL

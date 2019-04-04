@@ -6,6 +6,12 @@
 void SensorSetup(void)
 {  
   pinMode(ADC_PIN, INPUT); // ADC input
+  // enable ADC with highest precision
+  ADCSRA = _BV(ADEN) | 7;
+  // set input mux to sensor
+  ADMUX = ADC_PIN;
+  // disable input buffer for ADC1
+  DIDR0 |= _BV(ADC1D);
 }
 
 #if 0
@@ -26,15 +32,26 @@ int AverageAdc(int sample)
   return (avg / samples_in_buffer);
 }
 #endif
+
+int MyAnalogRead()
+{
+  // start ADC conversion
+  ADCSRA |= _BV(ADSC);
+  // wait for end of conversion
+  while(bit_is_set(ADCSRA, ADSC));
+
+  return(ADCW);
+}
+
 // read ADC three times, reject one sample which is far from others
 // average remaining two samples and return as result
-int ReadAdc(uint8_t adc)
+int ReadAdc()
 { int read1, read2, read3;
   int avg_final, delta, delta_final;
 
-  read1 = analogRead(adc);
-  read2 = analogRead(adc);
-  read3 = analogRead(adc);
+  read1 = MyAnalogRead();
+  read2 = MyAnalogRead();
+  read3 = MyAnalogRead();
 
   delta_final = abs(read1 - read2);
   avg_final = (read1 + read2)/2;
@@ -59,9 +76,9 @@ int ReadSensorAdc(void)
 {
   int sensor;
 
-  analogReference(DEFAULT);
-  delay(1);
-  sensor = ReadAdc(ADC_IN);
+  ADMUX = ADC_IN;
+  delay(2);
+  sensor = ReadAdc();
 
   return (sensor);
 }
@@ -70,9 +87,9 @@ int ReadTemperatureAdc(void)
 {
   int sample;
 
-  analogReference(INTERNAL1V1);
-  delay(1);
-  sample = ReadAdc(TEMP_SENSOR);
+  ADMUX = _BV(REFS1) | TEMP_SENSOR;
+  delay(2);
+  sample = ReadAdc();
 
   return (sample);
 }
