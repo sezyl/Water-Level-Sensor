@@ -1,18 +1,6 @@
 // 2019 - Sebastian Ĺ»yĹ‚owski
 // This program reads pressure sensor voltage, average it and output over the uart
 
-/**
- * Sensor calibration:
- * 
- * 1. Turn off device
- * 2. Sink sensor to pump off level (usually very close to complete unsink)
- * 3. Keep PB3 low and power on device
- * 4. Keep PB3 low until LED stop blinking and turns off
- * 5. Sink sensor to pump on level
- * 6. Pull PB3 low shortly
- * 7. Calibration is done and device start working in normal mode
- **/
-
 // PB0 - MOSI, P0 - RELAY
 // PB1 - MISO, P1 - LED
 // PB2 - ADC1, P2 - SENSOR
@@ -22,7 +10,6 @@
 
 #include <SoftSerial.h>     /* Allows Pin Change Interrupt Vector Sharing */
 #include <TinyPinChange.h>  /*  */
-#include <avr/eeprom.h>
 
 void(* resetFunction) (void) = 0;
 
@@ -47,47 +34,17 @@ void setup()
   digitalWrite(LED, LOW);
 
   SensorSetup();
+#ifdef CALIBRATION
+  CalibrationSetup();
+#endif
   ControllerSetup();
-
+  
   // set the data rate for the SoftwareSerial port
   mySerial.begin(9600);
   //mySerial.println("00 BOOT");
 #ifdef STORAGE
-  if(!ReadThresholdFromEeprom())
-  {
-    pumpOffThreshold = RELAY_OFF_THRESHOLD;
-    pumpOnThreshold = RELAY_ON_THRESHOLD;
-    WriteThresholdToEeprom();
-  }
 #endif
 }
-
-#ifdef STORAGE
-/* store thresholds with magic word */
-void WriteThresholdToEeprom(void)
-{
-  eeprom_write_word(EEPROM_OFF_THRESHOLD_ADDR, pumpOffThreshold);
-  eeprom_write_word(EEPROM_ON_THRESHOLD_ADDR, pumpOnThreshold);
-  eeprom_write_word(EEPROM_CRC_ADDR, pumpOffThreshold^pumpOnThreshold^EEPROM_THRESHOLD_MAGIC);
-}
-
-/* read and validate thresholds */
-bool ReadThresholdFromEeprom(void)
-{
-  uint16_t data;
-  bool result = false;
-  
-  pumpOffThreshold = eeprom_read_word(EEPROM_OFF_THRESHOLD_ADDR);
-  pumpOnThreshold = eeprom_read_word(EEPROM_ON_THRESHOLD_ADDR);
-  data = eeprom_read_word(EEPROM_CRC_ADDR);
-  data ^= pumpOnThreshold ^ pumpOffThreshold;
-  if(pumpOnThreshold > pumpOffThreshold) /* are values logical? */
-  {
-    result = ( EEPROM_THRESHOLD_MAGIC == data ); /* check magic word */
-  }
-  return(result);
-}
-#endif
 
 void BlinkLed(int blinks)
 {

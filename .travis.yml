@@ -12,4 +12,4 @@ before_install:
   - export DISPLAY=:1.0
   - source $TRAVIS_BUILD_DIR/install.sh
 script:
-  - arduino --verify src/main.ino
+  - arduino --verify src/src.ino
