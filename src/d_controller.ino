@@ -1,4 +1,4 @@
-// 2019 - Sebastian Ĺ»yĹ‚owski
+// 2019 - Sebastian Żyłowski
 // These are controller routines
 
 uint8_t relayMode = RELAY_IDLE;
@@ -13,7 +13,7 @@ uint16_t pumpOnThreshold = RELAY_ON_THRESHOLD;
 
 int last_sensor = 0;
 
-// the setup routine runs once when you press reset:
+// the setup routine runs once when you press reset
 void ControllerSetup() 
 {
   // initialize relay pin.
@@ -64,7 +64,7 @@ void ControllerLoop(int sensor)
         if( RelayIncreaseTimer(RELAY_TIME_ON_MAX, RELAY_GRACEOFF) )
         { // pump is turned on for too long - possible failure
           pumpFailureCounter++;
-          if(pumpFailureCounter >= RELAY_OVF_MAX)
+          if(pumpFailureCounter >= RELAY_FAILURES_MAX)
           {
             NextRelayMode(RELAY_PUMP_FAILURE);
           }

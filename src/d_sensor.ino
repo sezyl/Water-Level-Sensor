@@ -1,4 +1,4 @@
-// 2019 - Sebastian Ĺ»yĹ‚owski
+// 2019 - Sebastian Żyłowski
 // These are sensor reading and averaging routines
 
 /* sensor functions */
@@ -10,28 +10,9 @@ void SensorSetup(void)
   ADCSRA = _BV(ADEN) | 7;
   // set input mux to sensor
   ADMUX = ADC_PIN;
-  // disable input buffer for ADC1
+  // disable input buffer for ADC1 - this needs to be changed if sensor pin is changed!!
   DIDR0 |= _BV(ADC1D);
 }
-
-#if 0
-// function reads value from ADC, puts in buffer, average the buffer and returns the average
-int AverageAdc(int sample)
-{
-  int i, avg = 0;
-
-  samples[samples_id++] = sample;
-  if (samples_id >= AVERAGE_WINDOW) // prepare next cell index
-    samples_id = 0;
-  if (samples_in_buffer < AVERAGE_WINDOW) // if buffer not full, increase number of samples in it
-    samples_in_buffer++;
-
-  for (i = 0; i < samples_in_buffer; i++)
-    avg += samples[i];
-
-  return (avg / samples_in_buffer);
-}
-#endif
 
 int MyAnalogRead()
 {

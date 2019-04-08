@@ -1,4 +1,4 @@
-// 2019 - Sebastian Ĺ»yĹ‚owski
+// 2019 - Sebastian Żyłowski
 // This program reads pressure sensor voltage, average it and output over the uart
 
 // PB0 - MOSI, P0 - RELAY
@@ -14,11 +14,6 @@
 void(* resetFunction) (void) = 0;
 
 SoftSerial mySerial(RX_PIN, TX_PIN); // RX, TX
-
-#ifdef CONSOLE
-char uartrx_buffer[UARTRX_BUFFER_SIZE];
-uint8_t uartrx_id = 0;
-#endif
 
 char buf[UART_BUFFER_SIZE] = { 0 };
 
@@ -42,8 +37,6 @@ void setup()
   // set the data rate for the SoftwareSerial port
   mySerial.begin(9600);
   //mySerial.println("00 BOOT");
-#ifdef STORAGE
-#endif
 }
 
 void BlinkLed(int blinks)
@@ -58,6 +51,45 @@ void BlinkLed(int blinks)
   }
 }
 
+int CalculateSensorPercentage(int sensor)
+{
+  int percentage;
+  
+  // calculate current water level in percentage of threshold on level - it could be > 100%
+  if(sensor > pumpOffThreshold)
+  {
+     percentage = sensor - pumpOffThreshold;
+  }
+  percentage = (percentage*10)/( (pumpOnThreshold-pumpOffThreshold)/10);
+
+  return(percentage);
+}
+
+// this routine assumes that we starter it just after passing 0ms (must be syncronised to full second)
+void IndicateStatus(int sensorPercentage, uint8_t mode)
+{ unsigned long time;
+
+  if( mode == RELAY_IDLE )
+  { // if we are in idle then wait adequate time and turn off the LED
+    time = millis() - time;  // calculate time that already pass
+    time %= 1000;
+
+    if(sensorPercentage > 100) // in case level is higher than 100% limit it
+    {
+      sensorPercentage = 100;
+    }      
+    if(time<(sensorPercentage*9)) // do we still have time till LED should be off?
+    {
+      delay( (sensorPercentage*9) - time );
+    }
+  } else
+  {
+      BlinkLed(1+mode);     // blink current mode
+  }
+  
+  digitalWrite(LED, LOW);   // turn the LED off  
+}
+
 // the loop routine runs over and over again forever:
 void loop() 
 {
@@ -67,134 +99,16 @@ void loop()
   time = millis() % 1000;
   delay(1000 - time); // always synchronise to full second
 
-  digitalWrite(LED, LOW);   // turn the LED off
-  delay(20);          // let voltage regulator to stabilize and reduce noise
   sensorValue = ReadSensorAdc();
   temperature = ReadTemperatureAdc();
 
-
   digitalWrite(LED, HIGH);  // turn the LED on
-  time = millis();
-  
-  if(relayMode != RELAY_IDLE)
-    BlinkLed(1+relayMode);     // blink current mode
-
-  if(sensorValue > pumpOffThreshold)
-  {
-     sensorPercentage = sensorValue - pumpOffThreshold;
-  } else
-  {
-    sensorPercentage = 0;
-  }
-  // calculate current water level in percentage of relay on level - it could be > 100%
-  sensorPercentage = (sensorPercentage*100)/(pumpOnThreshold-pumpOffThreshold);
   
   ControllerLoop(sensorValue);
-  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d %d", sensorValue, temperature, sensorPercentage, relayMode);
+  sensorPercentage = CalculateSensorPercentage(sensorValue);
 
-  if( (sensorPercentage<50) && (relayMode==0) )
-  {  // if water level < 50% and we are in idle, then wait adequate time and turn off the LED
-     delay(sensorPercentage*9);
-     digitalWrite(LED, LOW);   // turn the LED off
-  }
-  
+  snprintf(buf, UART_BUFFER_SIZE, "10 %d %d %d %d", sensorValue, temperature, sensorPercentage, relayMode);
   mySerial.println(buf); // this is time consuming process
 
-  if( (sensorPercentage >= 50) && (relayMode==0) )
-  { // if water level >= 50% and we are in idle then wait adequate time and turn off the LED
-    time = millis() - time;  // calculate time that already pass
-    time %= 1000;
-    if(time<(sensorPercentage*9)) // do we still have time till LED should be off?
-    {
-      delay( (sensorPercentage*9) - time );
-    }
-     digitalWrite(LED, LOW);   // turn the LED off
-  }
-
-#ifdef CONSOLE
-  if ( checkSerial() )
-  {
-    analyzeCommand();
-  }
-#endif
-
+  IndicateStatus(sensorPercentage, relayMode);
 }
-
-#ifdef CONSOLE
-/* command line functions */
-
-// function collects incomming serial data until buffer is full or EOL received.
-// Returns true if there is full command in buffer
-bool checkSerial(void)
-{
-  char data;
-  bool result = false;
-
-  while ( (mySerial.available()) && (result == false) )
-  {
-    data = mySerial.read();
-    if (data == '\n')
-    {
-      result = true;
-      data = 0;  // replace EOL with end of string
-    }
-    if (uartrx_id < UARTRX_BUFFER_SIZE)
-    {
-      uartrx_buffer[uartrx_id++] = data;
-    }
-  }
-
-  return (result);
-}
-
-// present device status
-bool statusFunction(void)
-{ int sensor = ReadSensorAdc();
-
-  snprintf(buf, UART_BUFFER_SIZE, "20 [RELAY] Status: %d, Counter: %d, #ON: %ld", relayMode, relayCounter, relayOns);
-  mySerial.println(buf);
-  snprintf(buf, UART_BUFFER_SIZE, "21 [SENSOR] Value: %d, Average: %d, idx: %d, #: %d", sensor, AverageAdc(sensor), samples_id, samples_in_buffer);
-  mySerial.println(buf);
-
-  return (true);
-}
-
-// function checks if command in buffer equals given one.
-// If it matches it returns index in input buffer just after the command.
-// If not match returns 0
-uint8_t checkCommand(char *command)
-{
-  uint8_t command_length = strlen(command);
-  uint8_t result = 0;
-
-  if ( strncmp(uartrx_buffer, command, UARTRX_BUFFER_SIZE) == 0 )
-    result = command_length;
-
-  return (result);
-}
-
-// function analyzes command in buffer
-// it is expected that it is call once command is collected in buffer
-void analyzeCommand(void)
-{
-  bool result = false;
-
-  if ( checkCommand("reset") )
-  {
-    snprintf(buf, UART_BUFFER_SIZE, "99 REBOOT");
-    mySerial.println(buf);
-    resetFunction();
-  }
-
-  if ( checkCommand("status") )
-    result = statusFunction();
-
-  uartrx_id = 0;  // clear input buffer
-
-  if (!result)
-  {
-    snprintf(buf, UART_BUFFER_SIZE, "80 Unknown Command!");
-    mySerial.println(buf);
-  }
-}
-#endif /* CONSOLE */
