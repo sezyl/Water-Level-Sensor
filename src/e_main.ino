@@ -53,7 +53,7 @@ void BlinkLed(int blinks)
 
 int CalculateSensorPercentage(int sensor)
 {
-  int percentage;
+  int percentage = 0;
   
   // calculate current water level in percentage of threshold on level - it could be > 100%
   if(sensor > pumpOffThreshold)
